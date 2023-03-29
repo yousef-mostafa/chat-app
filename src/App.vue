@@ -8,6 +8,17 @@
   </div>
 </template>
 
+<script>
+import SocketioService from './socket.io-client/dist/socket.io';
+
+export default {
+  name: 'App',
+  components: {},
+  created() {
+    SocketioService.setupSocketConnection();
+  }
+}
+</script>
 <style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

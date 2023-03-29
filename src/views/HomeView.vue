@@ -1,18 +1,28 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <form action="">
+      <p>Message from server: "{{socketMessage}}"</p>
+      <input type="text" name="" id="" />
+      <input type="button" value="send" />
+    </form>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
-
 export default {
-  name: 'HomeView',
-  components: {
-    HelloWorld
+  name: "homeView",
+  data(){
+    return{
+      socketMessage: ''
+    }
+  },
+  sockets:{
+    connect() {
+      console.log("socket connected...")
+    },
+    disconnected() {
+      console.log("socket disconnected...")
+    }
   }
 }
 </script>
