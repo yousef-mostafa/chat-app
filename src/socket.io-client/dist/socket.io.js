@@ -15,12 +15,16 @@ class socketServes {
   subscribeToMessages(cb) {
     if (!this.socket) return(true);
     this.socket.on('message', msg => {
-      console.log('Room event received!');
       return cb(null, msg);
     });
   }
   sendMessage({message, roomName}, cb) {
     if (this.socket) this.socket.emit('message', { message, roomName }, cb);
+  }
+  userInfo(user){
+    this.socket.on("userInfo", (data)=>{
+      return user(null, data);
+    })
   }
 }
 

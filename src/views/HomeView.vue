@@ -10,8 +10,12 @@
       </form>
     </div>
     <div class="chat">
-      <div class="massages"></div>
-      <form @submit.prevent="sendMassage()">
+      <div class="messages">
+        <p v-for="message in messages" :key="message.id">
+        <span>{{message.name}}</span>:<span>{{message.message}}</span>
+        </p>
+      </div>
+      <form @submit.prevent="sendMessage()">
         <div class="input-group">
           <input type="text" class="form-control" v-model="inputMessage" />
           <button class="btn btn-dark" type="submit">Send</button>
@@ -30,14 +34,22 @@ export default {
       inputMessage: "",
     };
   },
+  computed:{
+    messages(){
+      return this.$store.state.messages;
+    }
+  },
   methods: {
     submitToken() {
       this.$store.commit("socketConnection", this.token);
+      this.$store.commit("setUserInfo");
+      this.$store.commit("receiveMessage");
     },
-    sendMassage() {
+    sendMessage() {
       const CHAT_ROOM = "ChatRoomId";
       const message = this.inputMessage;
-      this.$store.commit("sendMassage", { message, CHAT_ROOM });
+      this.$store.dispatch("handleLocalMsg", { message, CHAT_ROOM });
+      this.inputMessage = "";
     },
   },
 };

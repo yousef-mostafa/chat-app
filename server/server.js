@@ -2,7 +2,10 @@ const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
   cors: {
-    origins: ['http://localhost:8080'],
+    origins: [
+      "http://192.168.1.5:8080",
+      "http://localhost:8080"
+    ],
     credentials: true
   },
 });
@@ -12,13 +15,12 @@ const jwt = require('jsonwebtoken');
 // jwt secret
 const JWT_SECRET = 'myHashSecret';
 
-io.use(async (socket , next) => {
+io.use(async (socket, next) => {
   const token = socket.handshake.auth.token;
   try {
-    const user = await jwt.verify(token , JWT_SECRET);
-
-    console.log(`user: ${user}`);
+    const user = await jwt.verify(token, JWT_SECRET);
     socket.user = user;
+    socket.emit("userInfo" , socket.user);
     next();
 
   } catch (error) {
@@ -29,14 +31,9 @@ io.use(async (socket , next) => {
 
 
 io.on('connection', (socket) => {
-  // join user's own room
-  socket.join(socket.user.id);
+  // join user's to static room "ChatRoomId"
   socket.join('ChatRoomId');
   console.log('a user connected');
-
-  socket.on('my message', (msg) => {
-    io.emit('broadcast', `server: ${msg}`);
-  });
 
   socket.on("join", (roomName) => {
     console.log("join: " + roomName);
@@ -44,8 +41,15 @@ io.on('connection', (socket) => {
   });
 
   socket.on("message", ({ message, roomName }, callback) => {
-    console.log("message: " + message + " in " + roomName);
-    socket.to(roomName).emit("message", message);
+    // generate data to send to receivers
+    const outgoingMessage = {
+      name: socket.user.name,
+      id: new Date().valueOf(),
+      message,
+      local:false
+    };
+    // send to all user in ${roomName} except sender => handel sender letter
+    socket.to(roomName).emit("message", outgoingMessage);
     callback({
       status: "ok"
     });

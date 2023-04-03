@@ -6,33 +6,42 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    user:[],
-    massages : []
+    user: "",
+    messages: [],
   },
   getters: {
   },
   mutations: {
-    socketConnection(state , token) {
+    socketConnection(state, token) {
       socketServes.setupSocketConnection(token);
     },
-    sendMassage(state , payload) {
-      // socketServes.socket.on("broadcast", (data) => {
-      //   console.log(data);
-      // });
-      // console.log(payload);
-      let message = payload.message;
-      socketServes.sendMessage({message, roomName: payload.CHAT_ROOM}, cb => {
-        console.log(cb);
-      });
-      socketServes.subscribeToMessages((err, data) => {
-        console.log(data);
+    sendMessage(state, payload) {
+      socketServes.sendMessage({ message: payload.message, roomName: payload.CHAT_ROOM }, cb => {});
+    },
+    addLocalMsg(state, localMsg) {
+      state.messages.push({
+        name: state.user.name,
+        id: new Date().valueOf(),
+        message:localMsg,
+        local:true
       });
     },
-    newMassage() {
-      socketServes.socket.emit('message' , this.state.massages);
+    receiveMessage(state) {
+      socketServes.subscribeToMessages((err, data) => {
+        state.messages.push(data)
+      });
+    },
+    setUserInfo(state){
+      socketServes.userInfo((err, data) => {
+        state.user = data;
+      })
     }
   },
   actions: {
+    handleLocalMsg(context , payload){
+      context.commit("sendMessage", payload);
+      context.commit("addLocalMsg" , payload.message);
+    }
   },
   modules: {
   }
