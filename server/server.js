@@ -10,23 +10,45 @@ const io = require('socket.io')(http, {
   },
 });
 
-const jwt = require('jsonwebtoken');
-
-// jwt secret
-const JWT_SECRET = 'myHashSecret';
+let users = [
+  {
+    "name": "yousef mostafa",
+    "pass": "1182001",
+    "email": "yousef@test.com",
+    "id": 1
+  },
+  {
+    "name": "Mostafa Sayed",
+    "pass": "123456",
+    "email": "Mostafa@test.com",
+    "id": 2
+  },
+  {
+    "name": "John Doe",
+    "pass": "963852741",
+    "email": "John@test.com",
+    "id": 3
+  },
+]
+app.get("/users", (req, res) => {
+  res.json(users);
+});
+// find user from users array using request
+app.get("/users/:email", (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const email = req.params.email;
+  const user = users.filter(user => user.email == email);
+  if (user.length) {
+    res.json(user);
+    return;
+  }
+  else {
+    res.status(404).send('user not found');
+  }
+});
 
 io.use(async (socket, next) => {
-  const token = socket.handshake.auth.token;
-  try {
-    const user = await jwt.verify(token, JWT_SECRET);
-    socket.user = user;
-    socket.emit("userInfo" , socket.user);
-    next();
-
-  } catch (error) {
-    console.log('error', error.message);
-    return next(new Error(error.message));
-  }
+  next();
 })
 
 
@@ -46,7 +68,7 @@ io.on('connection', (socket) => {
       name: socket.user.name,
       id: new Date().valueOf(),
       message,
-      local:false
+      local: false
     };
     // send to all user in ${roomName} except sender => handel sender letter
     socket.to(roomName).emit("message", outgoingMessage);

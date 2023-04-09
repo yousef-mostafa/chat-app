@@ -12,18 +12,18 @@ export default new Vuex.Store({
   getters: {
   },
   mutations: {
-    socketConnection(state, token) {
-      socketServes.setupSocketConnection(token);
+    socketConnection() {
+      socketServes.setupSocketConnection();
     },
     sendMessage(state, payload) {
-      socketServes.sendMessage({ message: payload.message, roomName: payload.CHAT_ROOM }, cb => {});
+      socketServes.sendMessage({ message: payload.message, roomName: payload.CHAT_ROOM }, cb => { });
     },
     addLocalMsg(state, localMsg) {
       state.messages.push({
         name: state.user.name,
         id: new Date().valueOf(),
-        message:localMsg,
-        local:true
+        message: localMsg,
+        local: true
       });
     },
     receiveMessage(state) {
@@ -31,16 +31,29 @@ export default new Vuex.Store({
         state.messages.push(data)
       });
     },
-    setUserInfo(state){
-      socketServes.userInfo((err, data) => {
-        state.user = data;
-      })
-    }
   },
   actions: {
-    handleLocalMsg(context , payload){
+    login(context, payload) {
+      let result ;
+      try {
+        fetch(`http://localhost:3000/users/${payload.email}`)
+        .then(data => data.status == 404 ? result = data.statusText: result = data.json)
+        if (result.pass == payload.pass) {
+          context.state.user = result;
+          context.commit("socketConnection");
+          context.commit("receiveMessage");
+          return "succeed";
+        }
+        else {
+          return "failed";
+        }
+      } catch (error) {
+        return "failed";
+      }
+    },
+    handleLocalMsg(context, payload) {
       context.commit("sendMessage", payload);
-      context.commit("addLocalMsg" , payload.message);
+      context.commit("addLocalMsg", payload.message);
     }
   },
   modules: {

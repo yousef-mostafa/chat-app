@@ -2,16 +2,6 @@
   <div class="home">
     <div class="info">
       <h2 class="mb-3">{{ welcomeText }}</h2>
-      <p class="error text-danger">{{ error }}</p>
-    </div>
-    <div class="d-flex justify-content-center">
-      <form @submit.prevent="submitToken()" v-if="!login">
-        <!-- <p>Enter Your authorized token</p> -->
-        <div class="input-group mb-3">
-          <input type="text" class="form-control" v-model="token" />
-          <button class="btn btn-success" type="submit">Submit</button>
-        </div>
-      </form>
     </div>
     <div class="chat">
       <div class="messages">
@@ -21,10 +11,7 @@
           class="messages__message"
           :class="[message.local ? 'local' : 'outside']"
         >
-          <span>
-            <!-- >{{ message.name | handelUserName(user.name) }} : -->
-            {{ message.message }}</span
-          >
+          <span> {{ message.message }}</span>
         </p>
       </div>
       <form @submit.prevent="sendMessage()">
@@ -42,42 +29,19 @@ export default {
   name: "homeView",
   data() {
     return {
-      token: "",
-      login: false,
-      welcomeText: "Enter your authorized token",
-      error: "",
+      welcomeText: "",
       inputMessage: "",
     };
+  },
+  mounted() {
+    this.welcomeText = `Welcome ${this.$store.state.user.name}`;
   },
   computed: {
     messages() {
       return this.$store.state.messages;
     },
-    user() {
-      return this.$store.state.user;
-    },
-  },
-  filters: {
-    handelUserName(value, userName) {
-      return userName == value ? "(me)" : `(${value})`;
-    },
   },
   methods: {
-    submitToken() {
-      this.$store.commit("socketConnection", this.token);
-      this.$store.commit("setUserInfo");
-      this.$store.commit("receiveMessage");
-      setTimeout(() => {
-        if (this.user) {
-          this.login = true;
-          this.welcomeText = `Welcome ${this.user.name}`;
-          this.error = "";
-        } else {
-          this.error = "invalid token";
-          this.token = "";
-        }
-      }, 300);
-    },
     sendMessage() {
       const CHAT_ROOM = "ChatRoomId";
       const message = this.inputMessage;
